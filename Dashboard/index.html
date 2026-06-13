@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fastweb Ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#000;--surface:#1c1c1e;--surface2:#2c2c2e;--border:#2c2c2e;--border-light:#3a3a3c;
+  --text:#fff;--text-sec:#ebebf599;--text-muted:#636366;
+  --blue:#0a84ff;--green:#30d158;--red:#ff453a;--orange:#ff9f0a;--purple:#bf5af2;
+  --radius-sm:10px;--radius-md:14px;--radius-lg:20px;--nav-height:80px;
+}
+html,body,#root{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sans-serif;font-size:15px;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{display:none}
+input,button,select,textarea{font-family:'Inter',sans-serif}
+#root{min-height:100vh;padding-bottom:var(--nav-height)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.4)}}
+
+/* HEADER */
+.header{padding:56px 24px 0;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:17px;font-weight:600;letter-spacing:-.3px}
+.logo-sub{font-size:13px;color:var(--text-muted);margin-top:2px}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0}
+
+/* GREETING */
+.greeting{padding:24px 24px 0}
+.greeting h1{font-size:28px;font-weight:700;letter-spacing:-.8px;line-height:1.2}
+.accent{background:linear-gradient(90deg,var(--blue),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{font-size:15px;color:var(--text-muted);margin-top:6px}
+
+/* SECTION */
+.section-label{font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;padding:28px 24px 12px}
+
+/* CARD */
+.card{background:var(--surface);border-radius:var(--radius-lg);margin:0 16px;overflow:hidden}
+.card+.card{margin-top:10px}
+.card-row{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.card-row:last-child{border-bottom:none}
+.card-inner{padding:18px 16px}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px}
+.kpi-card{background:var(--surface);border-radius:var(--radius-lg);padding:18px 16px}
+.kpi-label{font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:8px}
+.kpi-value{font-size:34px;font-weight:700;letter-spacing:-1.5px;line-height:1}
+.kpi-value.blue{color:var(--text)}.kpi-value.green{color:var(--green)}.kpi-value.orange{color:var(--orange)}.kpi-value.red{color:var(--red)}
+.kpi-delta{font-size:12px;font-weight:500;margin-top:6px;color:var(--green)}
+.kpi-delta.red{color:var(--red)}.kpi-delta.orange{color:var(--orange)}
+
+/* PROGRESS */
+.prog-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.prog-row:last-child{margin-bottom:0}
+.prog-name{width:64px;font-size:14px;color:var(--text-sec);flex-shrink:0}
+.prog-track{flex:1;height:4px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--blue),var(--green));width:0%;transition:width 1.2s cubic-bezier(.16,1,.3,1)}
+.prog-pct{font-size:13px;font-weight:600;width:34px;text-align:right;color:var(--text-sec)}
+
+/* TICKET */
+.ticket-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ticket-dot.aperto{background:var(--blue)}.ticket-dot.chiuso{background:var(--surface2)}
+.ticket-id{font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+.ticket-title{font-size:14px;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.ticket-meta{font-size:12px;color:var(--text-muted)}
+
+/* TAG */
+.tag{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;flex-shrink:0}
+.tag.blue{background:rgba(10,132,255,.15);color:var(--blue)}.tag.green{background:rgba(48,209,88,.15);color:var(--green)}
+.tag.gray{background:var(--surface2);color:var(--text-muted)}.tag.orange{background:rgba(255,159,10,.15);color:var(--orange)}
+
+/* CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.cal-day-name{font-size:11px;color:var(--text-muted);text-align:center;font-weight:600;margin-bottom:4px}
+.cal-day{aspect-ratio:1;border-radius:var(--radius-sm);background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;border:1.5px solid transparent;user-select:none}
+.cal-day:active{transform:scale(.90)}
+.cal-day.oggi{border-color:var(--blue);color:var(--blue);font-weight:700}
+.cal-day.presente{background:rgba(48,209,88,.18);color:var(--green);border-color:var(--green)}
+.cal-day.assente{background:rgba(255,69,58,.18);color:var(--red);border-color:var(--red)}
+.cal-day.empty{background:transparent;cursor:default;border:none}
+
+/* AI */
+.ai-wrap{margin:0 16px;background:var(--surface);border-radius:var(--radius-lg);overflow:hidden}
+.ai-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.ai-status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.ai-messages{padding:16px;min-height:160px;max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:85%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5}
+.msg.ai{background:var(--surface2);align-self:flex-start;border-bottom-left-radius:4px}
+.msg.user{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.msg.typing{color:var(--text-muted);font-style:italic}
+.ai-input-row{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border)}
+.ai-input{flex:1;background:var(--surface2);border:none;border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);font-size:14px;outline:none}
+.ai-input::placeholder{color:var(--text-muted)}
+.ai-send-btn{background:var(--blue);border:none;border-radius:var(--radius-sm);width:42px;height:42px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ai-send-btn:active{opacity:.7}
+
+/* ALMANACCO */
+.search-input{width:calc(100% - 32px);background:var(--surface);border:none;border-radius:var(--radius-md);padding:12px 16px;color:var(--text);font-size:15px;outline:none;margin:0 16px}
+.search-input::placeholder{color:var(--text-muted)}
+.guide-icon{font-size:26px;flex-shrink:0}
+.guide-title{font-size:14px;font-weight:600;margin-bottom:3px}
+.guide-sub{font-size:12px;color:var(--text-muted)}
+.guide-arrow{color:var(--border-light);font-size:18px;margin-left:auto;flex-shrink:0}
+.no-results{padding:32px 16px;text-align:center;color:var(--text-muted);font-size:14px}
+
+/* FORM TICKET */
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:block}
+.form-input{width:100%;background:var(--surface2);border:none;border-radius:var(--radius-md);padding:12px 14px;color:var(--text);font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:background .15s}
+.form-input:focus{background:var(--border-light)}
+.form-input::placeholder{color:var(--text-muted)}
+textarea.form-input{resize:none;min-height:90px;line-height:1.5}
+select.form-input{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23636366' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-color:var(--surface2)}
+select.form-input option{background:var(--surface)}
+.stelle-row{display:flex;gap:10px}
+.stella{font-size:28px;cursor:pointer;opacity:.3;transition:opacity .15s,transform .15s;user-select:none}
+.stella.attiva{opacity:1}
+.stella:active{transform:scale(.85)}
+.btn-invia{width:100%;background:var(--blue);border:none;border-radius:var(--radius-md);padding:15px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:opacity .15s;margin-top:8px}
+.btn-invia:active{opacity:.75}
+
+/* TOAST */
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green);color:#000;font-size:14px;font-weight:600;padding:12px 24px;border-radius:30px;opacity:0;transition:all .3s ease;z-index:200;white-space:nowrap;pointer-events:none}
+.toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-height);background:rgba(0,0,0,.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--border);display:flex;align-items:flex-start;padding-top:10px;z-index:100}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:500;color:var(--text-muted);cursor:pointer;padding:4px 0;user-select:none}
+.nav-item.active{color:var(--blue)}
+.nav-item svg{width:24px;height:24px}
+
+/* UTILITY */
+.spacer{height:24px}
+.flex-1{flex:1;min-width:0}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ── DATI ──────────────────────────────────────────────────
+const DATI = {
+  utente: { nome:"Rosario", iniziali:"RM" },
+  kpi: { ticket_chiusi:24, score_kpi:87, peso_medio:3.2, ticket_aperti:5 },
+  team: [
+    { nome:"Rajesh", pct:87 },
+    { nome:"Priya",  pct:72 },
+    { nome:"Amit",   pct:61 },
+    { nome:"Sneha",  pct:45 },
+  ],
+  tickets: [
+    { id:"INC-004821", titolo:"ETL PowerCenter – job bloccato",       utente:"Rajesh",  data:"Oggi 09:14", peso:4, stato:"aperto"  },
+    { id:"INC-004798", titolo:"Oracle ORA-01555 snapshot too old",     utente:"Priya",   data:"Ieri 16:40", peso:3, stato:"aperto"  },
+    { id:"INC-004775", titolo:"Script CAPAM – permessi negati",        utente:"Amit",    data:"9 Giu",      peso:2, stato:"chiuso"  },
+    { id:"INC-004760", titolo:"Informatica Cloud – agent offline",     utente:"Sneha",   data:"8 Giu",      peso:5, stato:"chiuso"  },
+    { id:"INC-004741", titolo:"Remedy – duplicate incident merge",     utente:"Rosario", data:"7 Giu",      peso:2, stato:"chiuso"  },
+  ],
+  guide: [
+    { id:1, icona:"📋", titolo:"Gestione Ticket Remedy",           sotto:"Apertura, escalation, chiusura",    categoria:"Remedy",      contenuto:"Come aprire un ticket, assegnarlo, escalare e chiuderlo correttamente." },
+    { id:2, icona:"🔄", titolo:"ETL PowerCenter – Troubleshooting",sotto:"Job falliti, log, sessioni bloccate",categoria:"ETL",         contenuto:"Come analizzare i log di PowerCenter, identificare sessioni bloccate e rilanciarle." },
+    { id:3, icona:"🗄️", titolo:"Oracle SQL – Errori comuni",        sotto:"ORA-*, spazio, permessi, rollback", categoria:"Oracle",      contenuto:"Guida agli errori Oracle più frequenti e come risolverli." },
+    { id:4, icona:"🖥️", titolo:"CAPAM – Accesso Unix",              sotto:"Connessione macchine, script shell", categoria:"CAPAM",      contenuto:"Come connettersi alle macchine Unix tramite CAPAM ed eseguire script." },
+    { id:5, icona:"☁️", titolo:"Informatica Cloud – Setup",         sotto:"Configurazione agent, connettori",  categoria:"Informatica", contenuto:"Guida alla configurazione dell'agent Informatica Cloud e dei connettori." },
+    { id:6, icona:"📡", titolo:"VPN & Accessi",                    sotto:"Connessione, troubleshooting rete",  categoria:"Rete",        contenuto:"Come connettersi alla VPN aziendale e risolvere i problemi di accesso." },
+  ],
+  ai_risposte: [
+    "Ho analizzato 287 ticket simili. L'errore più frequente per job ETL bloccati è un lock Oracle attivo. Controlla la vista V$LOCK e cerca sessioni con STATUS='INACTIVE' da più di 30 minuti.",
+    "Dalla knowledge base: ORA-01555 indica undo segment insufficiente. Soluzione più usata (82% dei casi): aumentare UNDO_RETENTION a 3600 e verificare l'AUTOEXTEND del tablespace UNDOTBS.",
+    "Ho trovato 14 ticket risolti con questa tipologia. Il pattern vincente è: riavvio servizio Informatica → verifica log pmcmd → rilancio sessione con override parametri di connessione.",
+    "Proposta nuova: puoi automatizzare questo check con uno script Python che interroga Remedy ogni ora e aggiorna un log centralizzato. Vuoi che ti mostri la struttura base?",
+  ],
+};
+
+// ── ICONE NAV ─────────────────────────────────────────────
+const IcoHome     = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+const IcoCal      = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
+const IcoPlus     = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>;
+const IcoAgent    = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>;
+const IcoBook     = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>;
+const IcoSend     = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
+
+// ── DATA OGGI ─────────────────────────────────────────────
+function dataOggi() {
+  const g = ["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
+  const m = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+  const d = new Date();
+  return `${g[d.getDay()]}, ${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// ── ANIMATED NUMBER ───────────────────────────────────────
+function AnimNum({ target, suffix="" }) {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    let cur = 0;
+    const step = Math.ceil(target / (900/16));
+    const t = setInterval(() => { cur = Math.min(cur+step, target); setV(cur); if(cur>=target) clearInterval(t); }, 16);
+    return () => clearInterval(t);
+  }, [target]);
+  return <>{v}{suffix}</>;
+}
+
+// ── HOME ──────────────────────────────────────────────────
+function Home() {
+  const [bar, setBar] = useState(false);
+  useEffect(() => { setTimeout(() => setBar(true), 100); }, []);
+
+  return (
+    <div>
+      <div className="header">
+        <div><div className="logo">Fastweb Ops</div><div className="logo-sub">{dataOggi()}</div></div>
+        <div className="avatar">RM</div>
+      </div>
+      <div className="greeting">
+        <h1>Ciao, <span className="accent">Rosario</span> 👋</h1>
+        <div className="subtitle">Hai {DATI.kpi.ticket_aperti} ticket aperti oggi.</div>
+      </div>
+
+      <div className="section-label">Panoramica</div>
+      <div className="kpi-grid">
+        <div className="kpi-card"><div className="kpi-label">Ticket chiusi</div><div className="kpi-value blue"><AnimNum target={24}/></div><div className="kpi-delta">↑ +3 questa settimana</div></div>
+        <div className="kpi-card"><div className="kpi-label">Score KPI</div><div className="kpi-value green"><AnimNum target={87} suffix="%"/></div><div className="kpi-delta">Target: 80%</div></div>
+        <div className="kpi-card"><div className="kpi-label">Peso medio</div><div className="kpi-value orange">3.2</div><div className="kpi-delta orange">scala 1–5</div></div>
+        <div className="kpi-card"><div className="kpi-label">Aperti</div><div className="kpi-value red"><AnimNum target={5}/></div><div className="kpi-delta red">↑ 2 in scadenza</div></div>
+      </div>
+
+      <div className="section-label">Team India</div>
+      <div className="card"><div className="card-inner">
+        {DATI.team.map((m,i) => (
+          <div className="prog-row" key={i}>
+            <div className="prog-name">{m.nome}</div>
+            <div className="prog-track"><div className="prog-fill" style={{width: bar ? m.pct+"%" : "0%"}}/></div>
+            <div className="prog-pct">{m.pct}%</div>
+          </div>
+        ))}
+      </div></div>
+
+      <div className="section-label">Ultimi ticket</div>
+      <div className="card">
+        {DATI.tickets.map((t,i) => (
+          <div className="card-row" key={i}>
+            <div className={`ticket-dot ${t.stato}`}/>
+            <div className="flex-1">
+              <div className="ticket-id">{t.id}</div>
+              <div className="ticket-title">{t.titolo}</div>
+              <div className="ticket-meta">{t.data} · {t.utente}</div>
+            </div>
+            <div className="tag blue">★ {t.peso}</div>
+          </div>
+        ))}
+      </div>
+      <div className="spacer"/>
+    </div>
+  );
+}
+
+// ── PRESENZE ──────────────────────────────────────────────
+function Presenze() {
+  const oggi = new Date();
+  const anno = oggi.getFullYear();
+  const mese = oggi.getMonth();
+  const giorniMese = new Date(anno, mese+1, 0).getDate();
+  const primoGiorno = new Date(anno, mese, 1).getDay();
+  const offset = primoGiorno === 0 ? 6 : primoGiorno - 1;
+  const nomiMesi = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+  const [stati, setStati] = useState({});
+
+  const toggle = (d) => {
+    setStati(prev => {
+      const cur = prev[d];
+      return {...prev, [d]: cur===undefined ? "presente" : cur==="presente" ? "assente" : undefined};
+    });
+  };
+
+  const presenze = Object.values(stati).filter(v=>v==="presente").length;
+  const assenze  = Object.values(stati).filter(v=>v==="assente").length;
+
+  return (
+    <div>
+      <div className="header">
+        <div><div className="logo">Presenze</div><div className="logo-sub">{nomiMesi[mese]} {anno}</div></div>
+        <div className="avatar">RM</div>
+      </div>
+      <div className="greeting">
+        <h1>Calendario</h1>
+        <div className="subtitle">Tocca un giorno per segnare la presenza.</div>
+      </div>
+
+      <div className="section-label">{nomiMesi[mese]} {anno}</div>
+      <div className="card"><div className="card-inner">
+        <div className="cal-grid" style={{marginBottom:8}}>
+          {["L","M","M","G","V","S","D"].map((g,i)=><div className="cal-day-name" key={i}>{g}</div>)}
+        </div>
+        <div className="cal-grid">
+          {Array.from({length:offset},(_,i)=><div key={`e${i}`} className="cal-day empty"/>)}
+          {Array.from({length:giorniMese},(_,i)=>{
+            const g = i+1;
+            const s = stati[g];
+            let cls = "cal-day";
+            if(g===oggi.getDate()) cls+=" oggi";
+            if(s==="presente") cls+=" presente";
+            if(s==="assente")  cls+=" assente";
+            return <div key={g} className={cls} onClick={()=>toggle(g)}>{g}</div>;
+          })}
+        </div>
+      </div></div>
+
+      <div className="section-label">Riepilogo</div>
+      <div className="kpi-grid">
+        <div className="kpi-card"><div className="kpi-label">Presenze</div><div className="kpi-value green">{presenze}</div><div className="kpi-delta">giorni confermati</div></div>
+        <div className="kpi-card"><div className="kpi-label">Assenze</div><div className="kpi-value red">{assenze}</div><div className="kpi-delta red">giorni assenti</div></div>
+      </div>
+
+      <div className="section-label">Legenda</div>
+      <div className="card"><div className="card-inner" style={{display:"flex",gap:20,flexWrap:"wrap"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,fontSize:13}}><div style={{width:12,height:12,borderRadius:4,background:"rgba(48,209,88,.2)",border:"1.5px solid var(--green)"}}/>Presente</div>
+        <div style={{display:"flex",alignItems:"center",gap:8,fontSize:13}}><div style={{width:12,height:12,borderRadius:4,background:"rgba(255,69,58,.2)",border:"1.5px solid var(--red)"}}/>Assente</div>
+        <div style={{display:"flex",alignItems:"center",gap:8,fontSize:13}}><div style={{width:12,height:12,borderRadius:4,border:"1.5px solid var(--blue)"}}/>Oggi</div>
+      </div></div>
+      <div className="spacer"/>
+    </div>
+  );
+}
+
+// ── AI AGENT ──────────────────────────────────────────────
+function Agent() {
+  const [msgs, setMsgs] = useState([{r:"ai", t:"Ciao! Sono l'agente Fastweb Ops. Ho accesso a tutti i ticket Remedy, le guide Confluence e gli appunti del team. Come posso aiutarti?"}]);
+  const [input, setInput] = useState("");
+  const [typing, setTyping] = useState(false);
+  const [idx, setIdx] = useState(0);
+  const bottom = useRef(null);
+
+  useEffect(() => { bottom.current?.scrollIntoView({behavior:"smooth"}); }, [msgs, typing]);
+
+  const invia = () => {
+    if(!input.trim()) return;
+    const t = input.trim();
+    setInput("");
+    setMsgs(p => [...p, {r:"user", t}]);
+    setTyping(true);
+    setTimeout(() => {
+      setMsgs(p => [...p, {r:"ai", t:DATI.ai_risposte[idx % DATI.ai_risposte.length]}]);
+      setIdx(i => i+1);
+      setTyping(false);
+    }, 1100);
+  };
+
+  const categorie = [
+    {i:"🔄", t:"ETL PowerCenter",  s:"Job bloccati, sessioni, log"},
+    {i:"🗄️", t:"Oracle Errors",    s:"ORA-*, lock, spazio, rollback"},
+    {i:"🖥️", t:"Script CAPAM",     s:"Permessi, connessioni Unix"},
+    {i:"📋", t:"Remedy Ticket",    s:"Apertura, escalation, chiusura"},
+    {i:"☁️", t:"Informatica Cloud",s:"Agent offline, connettori"},
+  ];
+
+  return (
+    <div>
+      <div className="header">
+        <div><div className="logo">AI Agent</div><div className="logo-sub">Connesso alla knowledge base</div></div>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <div className="ai-status-dot"/><span style={{fontSize:12,color:"var(--green)",fontWeight:500}}>Online</span>
+        </div>
+      </div>
+      <div className="greeting">
+        <h1>Ops <span className="accent">Agent</span></h1>
+        <div className="subtitle">Ragiona su ticket, guide ed errori.</div>
+      </div>
+
+      <div className="section-label">Conversazione</div>
+      <div className="ai-wrap">
+        <div className="ai-header"><div className="ai-status-dot"/><span style={{fontSize:14,fontWeight:500}}>Agente · knowledge base attiva</span></div>
+        <div className="ai-messages">
+          {msgs.map((m,i) => <div key={i} className={`msg ${m.r}`}>{m.t}</div>)}
+          {typing && <div className="msg ai typing">Sto analizzando…</div>}
+          <div ref={bottom}/>
+        </div>
+        <div className="ai-input-row">
+          <input className="ai-input" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&invia()} placeholder="Chiedi qualcosa…"/>
+          <button className="ai-send-btn" onClick={invia}><IcoSend/></button>
+        </div>
+      </div>
+
+      <div className="section-label">Categorie rapide</div>
+      <div className="card">
+        {categorie.map((c,i) => (
+          <div className="card-row" key={i} style={{cursor:"pointer"}} onClick={()=>setInput(`Aiutami con: ${c.t}`)}>
+            <div style={{fontSize:22}}>{c.i}</div>
+            <div className="flex-1"><div className="guide-title">{c.t}</div><div className="guide-sub">{c.s}</div></div>
+            <div className="guide-arrow">›</div>
+          </div>
+        ))}
+      </div>
+      <div className="spacer"/>
+    </div>
+  );
+}
+
+// ── ALMANACCO ─────────────────────────────────────────────
+function Almanacco() {
+  const [search, setSearch] = useState("");
+  const [catAttiva, setCatAttiva] = useState("Tutti");
+
+  const filtrate = DATI.guide.filter(g => {
+    const matchSearch = g.titolo.toLowerCase().includes(search.toLowerCase()) || g.sotto.toLowerCase().includes(search.toLowerCase());
+    const matchCat = catAttiva === "Tutti" || g.categoria === catAttiva;
+    return matchSearch && matchCat;
+  });
+
+  const cats = ["Tutti","Remedy","ETL","Oracle","CAPAM","Informatica","Rete"];
+
+  return (
+    <div>
+      <div className="header">
+        <div><div className="logo">Almanacco</div><div className="logo-sub">{DATI.guide.length} guide disponibili</div></div>
+        <div className="avatar">RM</div>
+      </div>
+      <div className="greeting">
+        <h1>Knowledge <span className="accent">Base</span></h1>
+        <div className="subtitle">Guide operative del progetto Fastweb.</div>
+      </div>
+
+      <div className="section-label">Cerca</div>
+      <input className="search-input" placeholder="🔍  Cerca una guida…" value={search} onChange={e=>setSearch(e.target.value)}/>
+
+      <div className="section-label">Guide ({filtrate.length})</div>
+      <div className="card">
+        {filtrate.length === 0
+          ? <div className="no-results">Nessuna guida trovata.</div>
+          : filtrate.map((g,i) => (
+            <div className="card-row" key={i} style={{cursor:"pointer"}} onClick={()=>alert(`${g.icona} ${g.titolo}\n\n${g.contenuto}`)}>
+              <div className="guide-icon">{g.icona}</div>
+              <div className="flex-1"><div className="guide-title">{g.titolo}</div><div className="guide-sub">{g.sotto}</div></div>
+              <div className="tag gray" style={{fontSize:10}}>{g.categoria}</div>
+              <div className="guide-arrow">›</div>
+            </div>
+          ))
+        }
+      </div>
+
+      <div className="section-label">Filtra categoria</div>
+      <div style={{padding:"0 16px",display:"flex",gap:8,flexWrap:"wrap"}}>
+        {cats.map((c,i) => (
+          <div key={i} className={`tag ${catAttiva===c?"blue":"gray"}`} style={{cursor:"pointer",padding:"6px 14px",fontSize:13}} onClick={()=>setCatAttiva(c)}>{c}</div>
+        ))}
+      </div>
+      <div className="spacer"/><div className="spacer"/>
+    </div>
+  );
+}
+
+// ── INSERIMENTO TICKET ────────────────────────────────────
+function NuovoTicket({ onSalvato }) {
+  const [form, setForm] = useState({numero:"", utente:"", categoria:"", complessita:0, descrizione:"", soluzione:""});
+  const [toast, setToast] = useState(false);
+
+  const set = (k,v) => setForm(p => ({...p, [k]:v}));
+
+  const invia = () => {
+    if(!form.numero || !form.utente || !form.categoria || !form.complessita || !form.descrizione || !form.soluzione) {
+      alert("Compila tutti i campi prima di salvare."); return;
+    }
+    setToast(true);
+    setTimeout(() => { setToast(false); onSalvato && onSalvato(); }, 1800);
+    setForm({numero:"", utente:"", categoria:"", complessita:0, descrizione:"", soluzione:""});
+  };
+
+  return (
+    <div>
+      <div className="header">
+        <div><div className="logo">Nuovo Ticket</div><div className="logo-sub">Registra il lavoro svolto</div></div>
+        <div className="avatar">RM</div>
+      </div>
+      <div className="greeting">
+        <h1>Inserisci <span className="accent">Ticket</span> ✍️</h1>
+        <div className="subtitle">Ogni ticket arricchisce la knowledge base dell'AI.</div>
+      </div>
+
+      <div className="section-label">Dettagli</div>
+      <div className="card"><div className="card-inner">
+
+        <div className="form-group">
+          <label className="form-label">Numero Ticket Remedy</label>
+          <input className="form-input" placeholder="es. INC-004900" value={form.numero} onChange={e=>set("numero",e.target.value)}/>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Chi ha lavorato</label>
+          <select className="form-input" value={form.utente} onChange={e=>set("utente",e.target.value)}>
+            <option value="">Seleziona persona…</option>
+            {["Rosario","Rajesh","Priya","Amit","Sneha"].map(n=><option key={n} value={n}>{n}</option>)}
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Categoria problema</label>
+          <select className="form-input" value={form.categoria} onChange={e=>set("categoria",e.target.value)}>
+            <option value="">Seleziona categoria…</option>
+            {["ETL PowerCenter","Oracle SQL","CAPAM / Unix","Remedy","Informatica Cloud","VPN / Rete","Altro"].map(c=><option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Complessità</label>
+          <div className="stelle-row">
+            {[1,2,3,4,5].map(n => (
+              <div key={n} className={`stella${form.complessita>=n?" attiva":""}`} onClick={()=>set("complessita",n)}>★</div>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Descrizione problema</label>
+          <textarea className="form-input" placeholder="Descrivi brevemente il problema riscontrato…" value={form.descrizione} onChange={e=>set("descrizione",e.target.value)}/>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Soluzione adottata</label>
+          <textarea className="form-input" placeholder="Come hai risolto? Più dettagli dai, più l'AI impara…" value={form.soluzione} onChange={e=>set("soluzione",e.target.value)}/>
+        </div>
+
+        <button className="btn-invia" onClick={invia}>✓ &nbsp; Salva ticket</button>
+
+      </div></div>
+
+      {toast && <div className="toast visible">✅ Ticket salvato correttamente</div>}
+      <div className="spacer"/>
+    </div>
+  );
+}
+
+// ── APP ───────────────────────────────────────────────────
+const TABS = [
+  { id:"home",     label:"Home",     Icon:IcoHome  },
+  { id:"presenze", label:"Presenze", Icon:IcoCal   },
+  { id:"ticket",   label:"Ticket",   Icon:IcoPlus  },
+  { id:"agent",    label:"AI Agent", Icon:IcoAgent },
+  { id:"almanacco",label:"Guide",    Icon:IcoBook  },
+];
+
+function App() {
+  const [tab, setTab] = useState("home");
+
+  const pagine = {
+    home:      <Home/>,
+    presenze:  <Presenze/>,
+    ticket:    <NuovoTicket onSalvato={()=>setTab("home")}/>,
+    agent:     <Agent/>,
+    almanacco: <Almanacco/>,
+  };
+
+  return (
+    <>
+      <style>{`@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}`}</style>
+      <div style={{animation:"fadeIn .2s ease"}} key={tab}>
+        {pagine[tab]}
+      </div>
+      <nav className="bottom-nav">
+        {TABS.map(({id,label,Icon}) => (
+          <div key={id} className={`nav-item${tab===id?" active":""}`} onClick={()=>setTab(id)}>
+            <Icon/>{label}
+          </div>
+        ))}
+      </nav>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
